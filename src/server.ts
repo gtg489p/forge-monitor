@@ -9,7 +9,7 @@ import type { MetricSnapshot } from "./types.js";
 // History ring buffer
 // ---------------------------------------------------------------------------
 
-const HISTORY_SIZE = 300;
+const HISTORY_SIZE = 18000;
 const history: MetricSnapshot[] = [];
 
 // ---------------------------------------------------------------------------
