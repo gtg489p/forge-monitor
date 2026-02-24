@@ -135,15 +135,15 @@ export function CpuCard({ snapshots, latest }: Props) {
       {coreCount > 0 && (
         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
           <span className="text-xs text-zinc-500">
-            Max Core: <span className="text-zinc-400">{maxCore.toFixed(1)}%</span>
-          </span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-xs text-zinc-500">
             Avg: <span className="text-zinc-400">{avgCore.toFixed(1)}%</span>
           </span>
           <span className="text-zinc-700">·</span>
           <span className="text-xs text-zinc-500">
             Hot (&gt;75%): <span className="text-zinc-400">{hotCores} cores</span>
+          </span>
+          <span className="text-zinc-700">·</span>
+          <span className="text-xs text-zinc-500">
+            Max Core: <span className="text-zinc-400">{maxCore.toFixed(1)}%</span>
           </span>
           <span className="text-zinc-700">·</span>
           <span className="text-xs text-zinc-500">
