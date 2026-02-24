@@ -1,0 +1,57 @@
+import { useMetrics } from "./hooks/useMetrics.js";
+import { CpuCard } from "./components/CpuCard.js";
+import { MemoryCard } from "./components/MemoryCard.js";
+import { DiskCard } from "./components/DiskCard.js";
+import { NetworkCard } from "./components/NetworkCard.js";
+import { LoadCard } from "./components/LoadCard.js";
+
+export default function App() {
+  const { snapshots, latest, connected } = useMetrics();
+
+  return (
+    <div className="min-h-screen bg-zinc-950 p-4 md:p-6">
+      {/* Header */}
+      <header className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-zinc-100 tracking-tight">
+            Forge Monitor
+          </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Real-time system metrics · 5 min rolling window
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-block w-2 h-2 rounded-full ${
+              connected ? "bg-emerald-500 shadow-[0_0_6px_#10b981]" : "bg-red-500"
+            }`}
+          />
+          <span className="text-xs text-zinc-500">
+            {connected ? "Live" : "Reconnecting…"}
+          </span>
+        </div>
+      </header>
+
+      {/* Row 1: CPU + Memory */}
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <CpuCard snapshots={snapshots} latest={latest} />
+        <MemoryCard snapshots={snapshots} latest={latest} />
+      </div>
+
+      {/* Row 2: Disk I/O + Network I/O */}
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <DiskCard snapshots={snapshots} latest={latest} />
+        <NetworkCard snapshots={snapshots} latest={latest} />
+      </div>
+
+      {/* Row 3: Load Average full-width */}
+      <div>
+        <LoadCard snapshots={snapshots} latest={latest} />
+      </div>
+
+      <footer className="mt-6 text-center text-xs text-zinc-700">
+        Updates every 1 s · 300 point ring buffer per metric
+      </footer>
+    </div>
+  );
+}

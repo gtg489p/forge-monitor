@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+}
+
+/* Tremor dark-mode overrides: make chart backgrounds transparent */
+.tremor-AreaChart-root svg,
+.tremor-LineChart-root svg {
+  background: transparent !important;
+}
