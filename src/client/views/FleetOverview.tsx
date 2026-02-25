@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useFleet } from "../hooks/useFleet.js";
 import { NodeCard } from "../components/NodeCard.js";
 import { FleetSummaryBar } from "../components/FleetSummaryBar.js";
@@ -9,6 +10,21 @@ interface Props {
 export function FleetOverview({ onNodeClick }: Props) {
   const { nodes, connected } = useFleet();
   const nodeList = Array.from(nodes.values());
+  const [jobCounts, setJobCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/jobs/counts-by-worker")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: Record<string, number>) => setJobCounts(data))
+      .catch(() => {});
+    const iv = setInterval(() => {
+      fetch("/api/jobs/counts-by-worker")
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((data: Record<string, number>) => setJobCounts(data))
+        .catch(() => {});
+    }, 5000);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-950 p-4 md:p-6">
@@ -20,6 +36,12 @@ export function FleetOverview({ onNodeClick }: Props) {
           <p className="text-xs text-zinc-500 mt-0.5">Fleet Overview</p>
         </div>
         <div className="flex items-center gap-4">
+          <a
+            href="#/jobs"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-800 rounded px-2 py-1"
+          >
+            Job Queue
+          </a>
           <FleetSummaryBar nodes={nodeList} />
           <div className="flex items-center gap-2">
             <span
@@ -47,6 +69,7 @@ export function FleetOverview({ onNodeClick }: Props) {
             <NodeCard
               key={node.id}
               node={node}
+              activeJobs={jobCounts[node.id] ?? 0}
               onClick={() => onNodeClick(node.id)}
             />
           ))}

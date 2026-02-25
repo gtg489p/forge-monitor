@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { LocalDashboard } from "./views/LocalDashboard.js";
 import { FleetOverview } from "./views/FleetOverview.js";
 import { NodeDashboard } from "./views/NodeDashboard.js";
+import { JobsDashboard } from "./views/JobsDashboard.js";
 
 // ---------------------------------------------------------------------------
 // Hash router
@@ -10,7 +11,8 @@ import { NodeDashboard } from "./views/NodeDashboard.js";
 type Route =
   | { view: "local" }
   | { view: "fleet" }
-  | { view: "node"; nodeId: string };
+  | { view: "node"; nodeId: string }
+  | { view: "jobs" };
 
 function parseHash(): Route {
   const hash = window.location.hash;
@@ -19,6 +21,7 @@ function parseHash(): Route {
     if (nodeId) return { view: "node", nodeId };
   }
   if (hash === "#/fleet") return { view: "fleet" };
+  if (hash === "#/jobs") return { view: "jobs" };
   return { view: "local" };
 }
 
@@ -73,6 +76,17 @@ export function Router() {
     return (
       <NodeDashboard
         nodeId={route.nodeId}
+        onBack={() => {
+          window.location.hash = "#/fleet";
+          setRoute({ view: "fleet" });
+        }}
+      />
+    );
+  }
+
+  if (route.view === "jobs") {
+    return (
+      <JobsDashboard
         onBack={() => {
           window.location.hash = "#/fleet";
           setRoute({ view: "fleet" });

@@ -187,3 +187,12 @@ setInterval(async () => {
     console.warn("[agent] push failed — going offline, buffering...");
   }
 }, PUSH_INTERVAL_MS);
+
+// ---------------------------------------------------------------------------
+// Worker (opt-in via WORKER_ENABLED=true)
+// ---------------------------------------------------------------------------
+
+if (process.env.WORKER_ENABLED === "true") {
+  const { startWorker } = await import("./worker.js");
+  startWorker();
+}

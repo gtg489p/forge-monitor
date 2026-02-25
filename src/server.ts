@@ -20,14 +20,19 @@ if (HUB_MODE) {
   const { mountHubRoutes } = await import("./hub/ingest.js");
   const { nodeRegistry } = await import("./hub/nodes.js");
   const { fleetClients } = await import("./hub/relay.js");
+  const { initDb } = await import("./hub/db.js");
+  const { mountJobRoutes, startReaper } = await import("./hub/jobs.js");
 
+  initDb();
   mountHubRoutes(app);
+  mountJobRoutes(app);
+  startReaper();
 
   app.get("/api/health", (c) =>
     c.json({ ok: true, mode: "hub" as const, clients: fleetClients.size, nodes: nodeRegistry.size })
   );
 
-  console.log("[forge-monitor] HUB_MODE=true — fleet hub active");
+  console.log("[forge-monitor] HUB_MODE=true — fleet hub active (job queue enabled)");
 } else {
   const { mountLocalRoutes, getLocalClients } = await import("./local/collector.js");
 
