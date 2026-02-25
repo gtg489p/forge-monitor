@@ -4,8 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"bun --watch src/server.ts\"",
+    "dev:hub": "concurrently \"vite\" \"HUB_MODE=true bun --watch src/server.ts\"",
     "build": "vite build",
     "start": "bun run src/server.ts",
+    "start:hub": "HUB_MODE=true bun run src/server.ts",
+    "start:agent": "bun run agent/agent.ts",
     "start:local": "bun run build && bun run src/server.ts",
     "server": "bun run src/server.ts"
   },

@@ -1,0 +1,80 @@
+import { useState, useMemo } from "react";
+import { useNodeMetrics } from "../hooks/useNodeMetrics.js";
+import { CpuCard } from "../components/CpuCard.js";
+import { MemoryCard } from "../components/MemoryCard.js";
+import { DiskCard } from "../components/DiskCard.js";
+import { NetworkCard } from "../components/NetworkCard.js";
+import { LoadCard } from "../components/LoadCard.js";
+import { TimeSelector } from "../components/TimeSelector.js";
+import { downsample } from "../lib/downsample.js";
+
+interface Props {
+  nodeId: string;
+  onBack: () => void;
+}
+
+export function NodeDashboard({ nodeId, onBack }: Props) {
+  const { snapshots, latest, connected } = useNodeMetrics(nodeId);
+  const [horizonMinutes, setHorizonMinutes] = useState(5);
+
+  const windowedSnapshots = useMemo(() => {
+    const points = horizonMinutes * 60;
+    const sliced = snapshots.slice(-points);
+    return downsample(sliced, 300);
+  }, [snapshots, horizonMinutes]);
+
+  return (
+    <div className="min-h-screen bg-zinc-950 p-4 md:p-6">
+      <header className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="text-zinc-400 hover:text-zinc-200 text-sm transition-colors"
+          >
+            ← Fleet
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-zinc-100 tracking-tight">
+              {nodeId}
+            </h1>
+            <p className="text-xs text-zinc-500 mt-0.5">Node metrics</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <TimeSelector value={horizonMinutes} onChange={setHorizonMinutes} />
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-block w-2 h-2 rounded-full ${
+                connected ? "bg-emerald-500 shadow-[0_0_6px_#10b981]" : "bg-red-500"
+              }`}
+            />
+            <span className="text-xs text-zinc-500">
+              {connected ? "Live" : "Reconnecting…"}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {/* Row 1: CPU + Memory */}
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <CpuCard snapshots={windowedSnapshots} latest={latest} />
+        <MemoryCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
+
+      {/* Row 2: Disk I/O + Network I/O */}
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <DiskCard snapshots={windowedSnapshots} latest={latest} />
+        <NetworkCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
+
+      {/* Row 3: Load Average full-width */}
+      <div>
+        <LoadCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
+
+      <footer className="mt-6 text-center text-xs text-zinc-700">
+        Updates every 5 s · 360 point buffer (30 min history)
+      </footer>
+    </div>
+  );
+}
