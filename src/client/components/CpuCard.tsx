@@ -87,10 +87,13 @@ const CoreTile = memo(
       </div>
     );
   },
-  (prev, next) =>
-    prev.coreIndex === next.coreIndex &&
-    JSON.stringify(prev.data.slice(-30).map((s) => s.cpuCores?.[prev.coreIndex] ?? 0)) ===
-      JSON.stringify(next.data.slice(-30).map((s) => s.cpuCores?.[next.coreIndex] ?? 0)),
+  (prev, next) => {
+    if (prev.coreIndex !== next.coreIndex) return false;
+    if (prev.data.length !== next.data.length) return false;
+    const prevLast = prev.data[prev.data.length - 1];
+    const nextLast = next.data[next.data.length - 1];
+    return prevLast?.cpuCores?.[prev.coreIndex] === nextLast?.cpuCores?.[next.coreIndex];
+  },
 );
 
 export function CpuCard({ snapshots, latest }: Props) {

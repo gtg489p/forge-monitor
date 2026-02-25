@@ -10,7 +10,7 @@ import type { MetricSnapshot } from "./types.js";
 // ---------------------------------------------------------------------------
 
 const HISTORY_SIZE = 18000;
-const history: MetricSnapshot[] = [];
+let history: MetricSnapshot[] = [];
 
 // ---------------------------------------------------------------------------
 // SSE client registry
@@ -34,13 +34,20 @@ function broadcast(snapshot: MetricSnapshot): void {
 // Metrics collection
 // ---------------------------------------------------------------------------
 
-async function collectMetrics(): Promise<MetricSnapshot> {
-  const [cpuLoad, mem, fsStats, netStats] = await Promise.all([
-    si.currentLoad(),
-    si.mem(),
-    si.fsStats(),
-    si.networkStats("*"),
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms)
+    ),
   ]);
+}
+
+async function collectMetrics(): Promise<MetricSnapshot> {
+  const [cpuLoad, mem, fsStats, netStats] = await withTimeout(
+    Promise.all([si.currentLoad(), si.mem(), si.fsStats(), si.networkStats("*")]),
+    900
+  );
 
   const netArray = Array.isArray(netStats) ? netStats : [netStats];
   const rxSec = netArray.reduce((sum, n) => sum + (n.rx_sec ?? 0), 0);
@@ -82,7 +89,7 @@ setInterval(async () => {
   try {
     const snapshot = await collectMetrics();
     history.push(snapshot);
-    if (history.length > HISTORY_SIZE) history.shift();
+    if (history.length > HISTORY_SIZE + 60) history.splice(0, history.length - HISTORY_SIZE);
     broadcast(snapshot);
   } catch (err) {
     console.error("[metrics] collection error:", err);

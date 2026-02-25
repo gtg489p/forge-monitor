@@ -43,10 +43,29 @@ export function useMetrics(): MetricsState {
 
       // Live SSE stream
       es = new EventSource("/api/events");
+      let isFirstConnect = true;
 
       es.onopen = () => {
         if (!cancelled) {
           setState((prev) => ({ ...prev, connected: true }));
+          if (!isFirstConnect) {
+            // Reconnect — re-fetch history to fill any gap
+            fetch("/api/snapshot?limit=18000")
+              .then(async (res) => {
+                if (!cancelled && res.ok) {
+                  const data: MetricSnapshot[] = await res.json();
+                  if (data.length > 0) {
+                    setState((prev) => ({
+                      ...prev,
+                      snapshots: data,
+                      latest: data[data.length - 1],
+                    }));
+                  }
+                }
+              })
+              .catch(() => {});
+          }
+          isFirstConnect = false;
         }
       };
 
