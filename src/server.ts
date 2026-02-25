@@ -138,7 +138,8 @@ app.get("/api/events", (c) => {
 
 // Snapshot (history) --------------------------------------------------------
 app.get("/api/snapshot", (c) => {
-  return c.json(history);
+  const limit = Math.min(Number(c.req.query("limit") ?? HISTORY_SIZE), HISTORY_SIZE);
+  return c.json(history.slice(-limit));
 });
 
 // Health check --------------------------------------------------------------

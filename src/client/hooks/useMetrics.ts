@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { MetricSnapshot } from "../../types.js";
 import { addToRingBuffer } from "../lib/ringBuffer.js";
 
-const MAX_POINTS = 300;
+const MAX_POINTS = 18000;
 
 export interface MetricsState {
   snapshots: MetricSnapshot[];
@@ -24,7 +24,7 @@ export function useMetrics(): MetricsState {
     async function init() {
       // Pre-populate from history snapshot
       try {
-        const res = await fetch("/api/snapshot");
+        const res = await fetch("/api/snapshot?limit=18000");
         if (!cancelled && res.ok) {
           const data: MetricSnapshot[] = await res.json();
           if (data.length > 0) {

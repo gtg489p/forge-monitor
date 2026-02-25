@@ -63,7 +63,7 @@ export default function App() {
       </div>
 
       <footer className="mt-6 text-center text-xs text-zinc-700">
-        Updates every 1 s · 300 point ring buffer per metric
+        Updates every 1 s · 18000 point ring buffer (5 h history)
       </footer>
     </div>
   );
