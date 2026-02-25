@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"bun --watch src/server.ts\"",
     "build": "vite build",
-    "start": "bun run build && bun run src/server.ts",
+    "start": "bun run src/server.ts",
+    "start:local": "bun run build && bun run src/server.ts",
     "server": "bun run src/server.ts"
   },
   "dependencies": {
