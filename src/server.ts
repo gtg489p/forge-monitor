@@ -74,7 +74,9 @@ async function collectMetrics(): Promise<MetricSnapshot> {
 }
 
 // Warm up systeminformation (first call often returns 0 for rates)
-await collectMetrics().catch(() => {});
+// Warm up systeminformation — fire-and-forget, don't block startup
+// (top-level await can hang in constrained containers like Railway)
+collectMetrics().catch(() => {});
 
 setInterval(async () => {
   try {
