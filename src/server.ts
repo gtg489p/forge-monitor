@@ -60,8 +60,10 @@ async function collectMetrics(): Promise<MetricSnapshot> {
     cpu: Math.round(cpuLoad.currentLoad * 10) / 10,
     cpuCores: cpuLoad.cpus.map((c) => Math.round(c.load * 10) / 10),
     memory: {
-      percent: Math.round((mem.active / mem.total) * 1000) / 10,
-      used: Math.round((mem.active / 1073741824) * 100) / 100,
+      // mem.used = MemTotal - MemFree - Buffers - Cached (matches `free -h` "used" column)
+      // mem.active = Active pages only — underreports memory held by idle processes
+      percent: Math.round((mem.used / mem.total) * 1000) / 10,
+      used: Math.round((mem.used / 1073741824) * 100) / 100,
       total: Math.round((mem.total / 1073741824) * 100) / 100,
     },
     disk: {
