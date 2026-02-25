@@ -47,6 +47,16 @@ if (HUB_MODE) {
 }
 
 // ---------------------------------------------------------------------------
+// Pareto proxy (only if prodplan API is configured)
+// ---------------------------------------------------------------------------
+
+if (process.env.PRODPLAN_URL) {
+  const { mountParetoRoutes } = await import("./pareto/proxy.js");
+  mountParetoRoutes(app);
+  console.log(`[forge-monitor] Pareto proxy → ${process.env.PRODPLAN_URL}`);
+}
+
+// ---------------------------------------------------------------------------
 // Static files (built React SPA)
 // ---------------------------------------------------------------------------
 

@@ -37,6 +37,12 @@ export function FleetOverview({ onNodeClick }: Props) {
         </div>
         <div className="flex items-center gap-4">
           <a
+            href="#/pareto"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-800 rounded px-2 py-1"
+          >
+            Pareto Explorer
+          </a>
+          <a
             href="#/jobs"
             className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-800 rounded px-2 py-1"
           >

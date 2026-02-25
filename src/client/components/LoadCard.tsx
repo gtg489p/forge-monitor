@@ -1,4 +1,6 @@
-import { AreaChart } from "@tremor/react";
+import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts";
+import type { EChartsOption } from "echarts";
 import type { MetricSnapshot } from "../../types.js";
 import { formatTime } from "../lib/format.js";
 
@@ -7,13 +9,57 @@ interface Props {
   latest: MetricSnapshot | null;
 }
 
+const SERIES_CONFIG = [
+  { name: "Load 1m", key: "avg1" as const, color: "#6366f1" },
+  { name: "Load 5m", key: "avg5" as const, color: "#a855f7" },
+  { name: "Load 15m", key: "avg15" as const, color: "#ec4899" },
+];
+
 export function LoadCard({ snapshots, latest }: Props) {
-  const data = snapshots.map((s) => ({
+  const chartData = snapshots.map((s) => ({
     time: formatTime(s.timestamp),
-    "Load 1m": s.load.avg1,
-    "Load 5m": s.load.avg5,
-    "Load 15m": s.load.avg15,
+    avg1: s.load.avg1,
+    avg5: s.load.avg5,
+    avg15: s.load.avg15,
   }));
+
+  const option: EChartsOption = {
+    animation: false,
+    grid: { top: 8, right: 12, bottom: 24, left: 45, containLabel: false },
+    legend: {
+      show: true,
+      bottom: 0,
+      textStyle: { color: "#a1a1aa", fontSize: 10 },
+    },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (v) => (v as number).toFixed(2),
+    },
+    xAxis: {
+      type: "category",
+      data: chartData.map((d) => d.time),
+      boundaryGap: false,
+      axisLabel: { fontSize: 10 },
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: { fontSize: 10, formatter: (v: number) => v.toFixed(2) },
+    },
+    series: SERIES_CONFIG.map((s) => ({
+      name: s.name,
+      type: "line" as const,
+      data: chartData.map((d) => d[s.key]),
+      showSymbol: false,
+      lineStyle: { color: s.color, width: 1.5 },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: s.color + "4D" },
+          { offset: 1, color: s.color + "05" },
+        ]),
+      },
+      itemStyle: { color: s.color },
+    })),
+  };
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
@@ -50,18 +96,12 @@ export function LoadCard({ snapshots, latest }: Props) {
         )}
       </div>
 
-      <AreaChart
-        className="h-40"
-        data={data}
-        index="time"
-        categories={["Load 1m", "Load 5m", "Load 15m"]}
-        colors={["indigo", "purple", "pink"]}
-        valueFormatter={(v) => v.toFixed(2)}
-        showLegend={true}
-        showGridLines={true}
-        showAnimation={false}
-        autoMinValue={true}
-        yAxisWidth={45}
+      <ReactECharts
+        option={option}
+        theme="forgeMonitor"
+        style={{ height: 160 }}
+        notMerge={true}
+        opts={{ renderer: "canvas" }}
       />
     </div>
   );

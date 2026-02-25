@@ -13,13 +13,11 @@
     "server": "bun run src/server.ts"
   },
   "dependencies": {
-    "@headlessui/react": "^2.1.10",
-    "@remixicon/react": "^4.3.0",
-    "@tremor/react": "^3.18.3",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.6",
     "hono": "^4.6.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.13.3",
     "systeminformation": "^5.23.5"
   },
   "devDependencies": {

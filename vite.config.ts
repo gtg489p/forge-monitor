@@ -6,13 +6,12 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
         manualChunks: {
           "react-vendor": ["react", "react-dom"],
-          "recharts-vendor": ["recharts"],
-          "tremor-vendor": ["@tremor/react"],
+          "echarts-vendor": ["echarts", "echarts-for-react"],
         },
       },
     },

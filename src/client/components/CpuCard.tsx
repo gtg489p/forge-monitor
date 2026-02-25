@@ -1,10 +1,7 @@
 import { useState, memo } from "react";
-import { AreaChart } from "@tremor/react";
-import {
-  AreaChart as ReAreaChart,
-  Area,
-  ResponsiveContainer,
-} from "recharts";
+import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts";
+import type { EChartsOption } from "echarts";
 import type { MetricSnapshot } from "../../types.js";
 import { formatTime } from "../lib/format.js";
 
@@ -50,11 +47,25 @@ interface CoreTileProps {
 
 const CoreTile = memo(
   function CoreTile({ coreIndex, data }: CoreTileProps) {
-    const sparkData = data.slice(-30).map((s) => ({
-      v: s.cpuCores?.[coreIndex] ?? 0,
-    }));
-    const current = sparkData.length > 0 ? sparkData[sparkData.length - 1].v : 0;
+    const sparkData = data.slice(-30).map((s) => s.cpuCores?.[coreIndex] ?? 0);
+    const current = sparkData.length > 0 ? sparkData[sparkData.length - 1] : 0;
     const fill = coreTierFill(current);
+
+    const sparkOption: EChartsOption = {
+      animation: false,
+      grid: { top: 0, right: 0, bottom: 0, left: 0 },
+      xAxis: { type: "category", show: false, data: sparkData.map((_, i) => i) },
+      yAxis: { type: "value", show: false, min: 0, max: 100 },
+      series: [
+        {
+          type: "line",
+          data: sparkData,
+          showSymbol: false,
+          lineStyle: { color: fill, width: 1 },
+          areaStyle: { color: fill, opacity: 0.3 },
+        },
+      ],
+    };
 
     return (
       <div
@@ -69,20 +80,13 @@ const CoreTile = memo(
           </span>
         </div>
         <div className="flex-1 mt-1 min-h-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <ReAreaChart data={sparkData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-              <Area
-                type="monotone"
-                dataKey="v"
-                stroke={fill}
-                fill={fill}
-                fillOpacity={0.3}
-                strokeWidth={1}
-                dot={false}
-                isAnimationActive={false}
-              />
-            </ReAreaChart>
-          </ResponsiveContainer>
+          <ReactECharts
+            option={sparkOption}
+            theme="forgeMonitor"
+            style={{ height: "100%", width: "100%" }}
+            notMerge={true}
+            opts={{ renderer: "canvas", width: "auto", height: "auto" }}
+          />
         </div>
       </div>
     );
@@ -116,8 +120,45 @@ export function CpuCard({ snapshots, latest }: Props) {
 
   const chartData = snapshots.map((s) => ({
     time: formatTime(s.timestamp),
-    "CPU %": Number(s.cpu.toFixed(1)),
+    value: Number(s.cpu.toFixed(1)),
   }));
+
+  const option: EChartsOption = {
+    animation: false,
+    grid: { top: 8, right: 12, bottom: 24, left: 45, containLabel: false },
+    xAxis: {
+      type: "category",
+      data: chartData.map((d) => d.time),
+      boundaryGap: false,
+      axisLabel: { fontSize: 10 },
+    },
+    yAxis: {
+      type: "value",
+      min: 0,
+      max: 100,
+      axisLabel: { formatter: (v: number) => `${v}%`, fontSize: 10 },
+    },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (v) => `${(v as number).toFixed(1)}%`,
+    },
+    series: [
+      {
+        name: "CPU %",
+        type: "line",
+        data: chartData.map((d) => d.value),
+        showSymbol: false,
+        lineStyle: { color: "#06b6d4", width: 1.5 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(6,182,212,0.3)" },
+            { offset: 1, color: "rgba(6,182,212,0.02)" },
+          ]),
+        },
+        itemStyle: { color: "#06b6d4" },
+      },
+    ],
+  };
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
@@ -169,19 +210,12 @@ export function CpuCard({ snapshots, latest }: Props) {
       )}
 
       {/* Main chart */}
-      <AreaChart
-        className="h-40"
-        data={chartData}
-        index="time"
-        categories={["CPU %"]}
-        colors={["cyan"]}
-        valueFormatter={(v) => `${v.toFixed(1)}%`}
-        showLegend={false}
-        showGridLines={true}
-        showAnimation={false}
-        minValue={0}
-        maxValue={100}
-        yAxisWidth={45}
+      <ReactECharts
+        option={option}
+        theme="forgeMonitor"
+        style={{ height: 160 }}
+        notMerge={true}
+        opts={{ renderer: "canvas" }}
       />
 
       {/* Toggle button */}

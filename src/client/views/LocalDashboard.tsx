@@ -31,6 +31,12 @@ export function LocalDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <a
+            href="#/pareto"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-800 rounded px-2 py-1"
+          >
+            Pareto Explorer
+          </a>
           <TimeSelector value={horizonMinutes} onChange={setHorizonMinutes} />
           <div className="flex items-center gap-2">
             <span

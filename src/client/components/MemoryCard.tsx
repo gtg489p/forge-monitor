@@ -1,4 +1,6 @@
-import { AreaChart } from "@tremor/react";
+import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts";
+import type { EChartsOption } from "echarts";
 import type { MetricSnapshot } from "../../types.js";
 import { formatTime } from "../lib/format.js";
 
@@ -8,10 +10,47 @@ interface Props {
 }
 
 export function MemoryCard({ snapshots, latest }: Props) {
-  const data = snapshots.map((s) => ({
+  const chartData = snapshots.map((s) => ({
     time: formatTime(s.timestamp),
-    "Memory %": Number(s.memory.percent.toFixed(1)),
+    value: Number(s.memory.percent.toFixed(1)),
   }));
+
+  const option: EChartsOption = {
+    animation: false,
+    grid: { top: 8, right: 12, bottom: 24, left: 45, containLabel: false },
+    xAxis: {
+      type: "category",
+      data: chartData.map((d) => d.time),
+      boundaryGap: false,
+      axisLabel: { fontSize: 10 },
+    },
+    yAxis: {
+      type: "value",
+      min: 0,
+      max: 100,
+      axisLabel: { formatter: (v: number) => `${v}%`, fontSize: 10 },
+    },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (v) => `${(v as number).toFixed(1)}%`,
+    },
+    series: [
+      {
+        name: "Memory %",
+        type: "line",
+        data: chartData.map((d) => d.value),
+        showSymbol: false,
+        lineStyle: { color: "#8b5cf6", width: 1.5 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(139,92,246,0.3)" },
+            { offset: 1, color: "rgba(139,92,246,0.02)" },
+          ]),
+        },
+        itemStyle: { color: "#8b5cf6" },
+      },
+    ],
+  };
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
@@ -34,19 +73,12 @@ export function MemoryCard({ snapshots, latest }: Props) {
         </span>
       </div>
 
-      <AreaChart
-        className="h-40"
-        data={data}
-        index="time"
-        categories={["Memory %"]}
-        colors={["violet"]}
-        valueFormatter={(v) => `${v.toFixed(1)}%`}
-        showLegend={false}
-        showGridLines={true}
-        showAnimation={false}
-        minValue={0}
-        maxValue={100}
-        yAxisWidth={45}
+      <ReactECharts
+        option={option}
+        theme="forgeMonitor"
+        style={{ height: 160 }}
+        notMerge={true}
+        opts={{ renderer: "canvas" }}
       />
     </div>
   );
