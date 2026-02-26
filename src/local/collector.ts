@@ -52,7 +52,9 @@ async function collectGpus(): Promise<GpuSnapshot[]> {
   try {
     const gfx = await withTimeout(si.graphics(), 3000);
     if (!gfx.controllers || gfx.controllers.length === 0) return [];
-    return gfx.controllers.map((c, i) => ({
+    // Filter out non-discrete GPUs (BMC/IPMI controllers like ASPEED have 0 VRAM)
+    const discrete = gfx.controllers.filter((c) => (c.memoryTotal ?? c.vram ?? 0) > 0);
+    return discrete.map((c, i) => ({
       index: i,
       model: c.model ?? "Unknown",
       vendor: c.vendor ?? "Unknown",
@@ -70,11 +72,11 @@ async function collectGpus(): Promise<GpuSnapshot[]> {
   }
 }
 
-// Refresh GPU data every 2s (si.graphics is expensive)
+// Refresh GPU data every 5s (si.graphics spawns nvidia-smi which is expensive)
 collectGpus().then((g) => { cachedGpus = g; }).catch(() => {});
 setInterval(async () => {
   cachedGpus = await collectGpus();
-}, 2000);
+}, 5000);
 
 export async function collectMetrics(): Promise<MetricSnapshot> {
   const [cpuLoad, mem, fsStats, netStats] = await withTimeout(
