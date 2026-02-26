@@ -5,6 +5,7 @@ import { MemoryCard } from "../components/MemoryCard.js";
 import { DiskCard } from "../components/DiskCard.js";
 import { NetworkCard } from "../components/NetworkCard.js";
 import { LoadCard } from "../components/LoadCard.js";
+import { GpuCard } from "../components/GpuCard.js";
 import { TimeSelector } from "../components/TimeSelector.js";
 import { downsample } from "../lib/downsample.js";
 
@@ -64,9 +65,23 @@ export function LocalDashboard() {
       </div>
 
       {/* Row 3: Load Average full-width */}
-      <div>
+      <div className="mb-4">
         <LoadCard snapshots={windowedSnapshots} latest={latest} />
       </div>
+
+      {/* Row 4: GPUs (if present) */}
+      {(latest?.gpus?.length ?? 0) > 0 && (
+        <div className="grid grid-cols-1 gap-4">
+          {latest!.gpus!.map((_, i) => (
+            <GpuCard
+              key={i}
+              snapshots={windowedSnapshots}
+              latest={latest}
+              gpuIndex={i}
+            />
+          ))}
+        </div>
+      )}
 
       <footer className="mt-6 text-center text-xs text-zinc-700">
         Updates every 1 s · 18000 point ring buffer (5 h history)

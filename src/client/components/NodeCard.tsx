@@ -17,6 +17,8 @@ const STATUS_DOT: Record<NodeWithStatus["status"], string> = {
 export const NodeCard = memo(function NodeCard({ node, activeJobs, onClick }: Props) {
   const cpu = node.latest?.cpu ?? 0;
   const mem = node.latest?.memory.percent ?? 0;
+  const gpus = node.latest?.gpus;
+  const gpuCount = gpus?.length ?? 0;
 
   return (
     <button
@@ -29,6 +31,11 @@ export const NodeCard = memo(function NodeCard({ node, activeJobs, onClick }: Pr
           <span className="text-sm font-medium text-zinc-200 truncate">{node.name}</span>
         </div>
         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+          {gpuCount > 0 && (
+            <span className="text-xs bg-purple-900 text-purple-300 px-1.5 py-0.5 rounded font-medium">
+              {gpuCount} GPU{gpuCount !== 1 ? "s" : ""}
+            </span>
+          )}
           {activeJobs != null && activeJobs > 0 && (
             <span className="text-xs bg-amber-900 text-amber-300 px-1.5 py-0.5 rounded font-medium">
               {activeJobs} job{activeJobs !== 1 ? "s" : ""}
@@ -47,6 +54,14 @@ export const NodeCard = memo(function NodeCard({ node, activeJobs, onClick }: Pr
           Mem{" "}
           <span className="text-zinc-200 font-mono">{mem.toFixed(1)}%</span>
         </span>
+        {gpuCount > 0 && gpus![0].utilizationGpu > 0 && (
+          <span>
+            GPU{" "}
+            <span className="text-purple-300 font-mono">
+              {gpus![0].utilizationGpu.toFixed(0)}%
+            </span>
+          </span>
+        )}
       </div>
 
       <NodeSparkline snapshots={node.history} />

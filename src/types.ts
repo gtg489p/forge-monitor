@@ -1,3 +1,17 @@
+export interface GpuSnapshot {
+  index: number;
+  model: string;
+  vendor: string;
+  vramTotal: number;         // MB
+  vramUsed: number;          // MB
+  utilizationGpu: number;    // percentage 0-100
+  utilizationMemory: number; // percentage 0-100
+  clockCore: number;         // MHz
+  clockMemory: number;       // MHz
+  temperatureGpu: number;    // °C
+  fanSpeed: number;          // percentage 0-100
+}
+
 export interface MetricSnapshot {
   timestamp: number;
   cpu: number; // percentage 0-100
@@ -20,6 +34,7 @@ export interface MetricSnapshot {
     avg5: number;
     avg15: number;
   };
+  gpus?: GpuSnapshot[];
 }
 
 // ---------------------------------------------------------------------------

@@ -40,6 +40,20 @@ if (!HUB_URL || !NODE_ID || !SECRET) {
 // Metrics (local copy — agent runs standalone, no import from server)
 // ---------------------------------------------------------------------------
 
+interface GpuSnapshot {
+  index: number;
+  model: string;
+  vendor: string;
+  vramTotal: number;
+  vramUsed: number;
+  utilizationGpu: number;
+  utilizationMemory: number;
+  clockCore: number;
+  clockMemory: number;
+  temperatureGpu: number;
+  fanSpeed: number;
+}
+
 interface MetricSnapshot {
   timestamp: number;
   cpu: number;
@@ -48,6 +62,7 @@ interface MetricSnapshot {
   disk: { read: number; write: number };
   network: { rx: number; tx: number };
   load: { avg1: number; avg5: number; avg15: number };
+  gpus?: GpuSnapshot[];
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -58,6 +73,37 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     ),
   ]);
 }
+
+// ---------------------------------------------------------------------------
+// GPU collection — cached, refreshed every 2s
+// ---------------------------------------------------------------------------
+
+let cachedGpus: GpuSnapshot[] = [];
+
+async function collectGpus(): Promise<GpuSnapshot[]> {
+  try {
+    const gfx = await withTimeout(si.graphics(), 3000);
+    if (!gfx.controllers || gfx.controllers.length === 0) return [];
+    return gfx.controllers.map((c, i) => ({
+      index: i,
+      model: c.model ?? "Unknown",
+      vendor: c.vendor ?? "Unknown",
+      vramTotal: c.memoryTotal ?? c.vram ?? 0,
+      vramUsed: c.memoryUsed ?? 0,
+      utilizationGpu: c.utilizationGpu ?? 0,
+      utilizationMemory: c.utilizationMemory ?? 0,
+      clockCore: c.clockCore ?? 0,
+      clockMemory: c.clockMemory ?? 0,
+      temperatureGpu: c.temperatureGpu ?? 0,
+      fanSpeed: c.fanSpeed ?? 0,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+collectGpus().then((g) => { cachedGpus = g; }).catch(() => {});
+setInterval(async () => { cachedGpus = await collectGpus(); }, 2000);
 
 async function collectMetrics(): Promise<MetricSnapshot> {
   const [cpuLoad, mem, fsStats, netStats] = await withTimeout(
@@ -71,7 +117,7 @@ async function collectMetrics(): Promise<MetricSnapshot> {
 
   const [avg1, avg5, avg15] = os.loadavg();
 
-  return {
+  const snapshot: MetricSnapshot = {
     timestamp: Date.now(),
     cpu: Math.round(cpuLoad.currentLoad * 10) / 10,
     cpuCores: cpuLoad.cpus.map((c) => Math.round(c.load * 10) / 10),
@@ -94,6 +140,12 @@ async function collectMetrics(): Promise<MetricSnapshot> {
       avg15: Math.round(avg15 * 100) / 100,
     },
   };
+
+  if (cachedGpus.length > 0) {
+    snapshot.gpus = cachedGpus;
+  }
+
+  return snapshot;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 import si from "systeminformation";
 import os from "os";
 import type { Hono } from "hono";
-import type { MetricSnapshot } from "../types.js";
+import type { MetricSnapshot, GpuSnapshot } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // History ring buffer
@@ -41,6 +41,41 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
+// ---------------------------------------------------------------------------
+// GPU collection — runs on its own cadence (si.graphics() is slow ~200ms)
+// Cached result is merged into every snapshot.
+// ---------------------------------------------------------------------------
+
+let cachedGpus: GpuSnapshot[] = [];
+
+async function collectGpus(): Promise<GpuSnapshot[]> {
+  try {
+    const gfx = await withTimeout(si.graphics(), 3000);
+    if (!gfx.controllers || gfx.controllers.length === 0) return [];
+    return gfx.controllers.map((c, i) => ({
+      index: i,
+      model: c.model ?? "Unknown",
+      vendor: c.vendor ?? "Unknown",
+      vramTotal: c.memoryTotal ?? c.vram ?? 0,
+      vramUsed: c.memoryUsed ?? 0,
+      utilizationGpu: c.utilizationGpu ?? 0,
+      utilizationMemory: c.utilizationMemory ?? 0,
+      clockCore: c.clockCore ?? 0,
+      clockMemory: c.clockMemory ?? 0,
+      temperatureGpu: c.temperatureGpu ?? 0,
+      fanSpeed: c.fanSpeed ?? 0,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// Refresh GPU data every 2s (si.graphics is expensive)
+collectGpus().then((g) => { cachedGpus = g; }).catch(() => {});
+setInterval(async () => {
+  cachedGpus = await collectGpus();
+}, 2000);
+
 export async function collectMetrics(): Promise<MetricSnapshot> {
   const [cpuLoad, mem, fsStats, netStats] = await withTimeout(
     Promise.all([si.currentLoad(), si.mem(), si.fsStats(), si.networkStats("*")]),
@@ -53,7 +88,7 @@ export async function collectMetrics(): Promise<MetricSnapshot> {
 
   const [avg1, avg5, avg15] = os.loadavg();
 
-  return {
+  const snapshot: MetricSnapshot = {
     timestamp: Date.now(),
     cpu: Math.round(cpuLoad.currentLoad * 10) / 10,
     cpuCores: cpuLoad.cpus.map((c) => Math.round(c.load * 10) / 10),
@@ -77,6 +112,12 @@ export async function collectMetrics(): Promise<MetricSnapshot> {
       avg15: Math.round(avg15 * 100) / 100,
     },
   };
+
+  if (cachedGpus.length > 0) {
+    snapshot.gpus = cachedGpus;
+  }
+
+  return snapshot;
 }
 
 // Warm up systeminformation — fire-and-forget, don't block startup
