@@ -73,9 +73,10 @@ async function collectGpus(): Promise<GpuSnapshot[]> {
 }
 
 // Refresh GPU data every 5s (si.graphics spawns nvidia-smi which is expensive)
-collectGpus().then((g) => { cachedGpus = g; }).catch(() => {});
+collectGpus().then((g) => { if (g.length > 0) cachedGpus = g; }).catch(() => {});
 setInterval(async () => {
-  cachedGpus = await collectGpus();
+  const g = await collectGpus();
+  if (g.length > 0) cachedGpus = g; // only update if non-empty — prevents flash-hide
 }, 5000);
 
 export async function collectMetrics(): Promise<MetricSnapshot> {

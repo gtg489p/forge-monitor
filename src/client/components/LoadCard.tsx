@@ -68,9 +68,11 @@ export function LoadCard({ snapshots, latest }: Props) {
       <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
-            Load Average
+            System Load Average
           </p>
-          <p className="text-xs text-zinc-600 mt-0.5">1 min · 5 min · 15 min</p>
+          <p className="text-xs text-zinc-600 mt-0.5" title="1m / 5m / 15m rolling average of runnable processes. Values above CPU core count indicate saturation.">
+            1m · 5m · 15m — values &gt; core count = saturation
+          </p>
         </div>
         {latest != null ? (
           <div className="flex items-center gap-4">

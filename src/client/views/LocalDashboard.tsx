@@ -58,20 +58,9 @@ export function LocalDashboard() {
         <MemoryCard snapshots={windowedSnapshots} latest={latest} />
       </div>
 
-      {/* Row 2: Disk I/O + Network I/O */}
-      <div className="grid grid-cols-1 gap-4 mb-4">
-        <DiskCard snapshots={windowedSnapshots} latest={latest} />
-        <NetworkCard snapshots={windowedSnapshots} latest={latest} />
-      </div>
-
-      {/* Row 3: Load Average full-width */}
-      <div className="mb-4">
-        <LoadCard snapshots={windowedSnapshots} latest={latest} />
-      </div>
-
-      {/* Row 4: GPUs (if present) */}
+      {/* Row 2: GPUs (if present) */}
       {(latest?.gpus?.length ?? 0) > 0 && (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 mb-4">
           {latest!.gpus!.map((_, i) => (
             <GpuCard
               key={i}
@@ -82,6 +71,17 @@ export function LocalDashboard() {
           ))}
         </div>
       )}
+
+      {/* Row 3: Disk I/O + Network I/O */}
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <DiskCard snapshots={windowedSnapshots} latest={latest} />
+        <NetworkCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
+
+      {/* Row 4: Load Average full-width */}
+      <div className="mb-4">
+        <LoadCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
 
       <footer className="mt-6 text-center text-xs text-zinc-700">
         Updates every 1 s · 18000 point ring buffer (5 h history)
