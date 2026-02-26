@@ -23,6 +23,8 @@ export function NetworkCard({ snapshots, latest }: Props) {
 
   const option: EChartsOption = {
     animation: false,
+    animationDuration: 0,
+    animationDurationUpdate: 0,
     grid: { top: 8, right: 12, bottom: 24, left: 60, containLabel: false },
     legend: {
       show: true,

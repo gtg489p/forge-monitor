@@ -15,7 +15,7 @@ export function LocalDashboard() {
   const windowedSnapshots = useMemo(() => {
     const points = horizonMinutes * 60;
     const sliced = snapshots.slice(-points);
-    return downsample(sliced, 300);
+    return downsample(sliced, 300, horizonMinutes * 60 * 1000);
   }, [snapshots, horizonMinutes]);
 
   return (
