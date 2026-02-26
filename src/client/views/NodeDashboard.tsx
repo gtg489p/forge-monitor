@@ -76,15 +76,15 @@ export function NodeDashboard({ nodeId, onBack }: Props) {
         </div>
       )}
 
-      {/* Row 3: Disk I/O + Network I/O */}
+      {/* Row 3: Load Average */}
+      <div className="mb-4">
+        <LoadCard snapshots={windowedSnapshots} latest={latest} />
+      </div>
+
+      {/* Row 4: Disk I/O + Network I/O */}
       <div className="grid grid-cols-1 gap-4 mb-4">
         <DiskCard snapshots={windowedSnapshots} latest={latest} />
         <NetworkCard snapshots={windowedSnapshots} latest={latest} />
-      </div>
-
-      {/* Row 4: Load Average full-width */}
-      <div className="mb-4">
-        <LoadCard snapshots={windowedSnapshots} latest={latest} />
       </div>
 
       <footer className="mt-6 text-center text-xs text-zinc-700">
