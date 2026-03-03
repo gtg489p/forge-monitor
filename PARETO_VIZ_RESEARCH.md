@@ -296,6 +296,19 @@ Use React context or a lightweight store (Zustand) to share across components. W
 +--------------------------------------------------+
 ```
 
+## Pareto Front Monotonicity Theorem (KPI Direction)
+
+**Theorem:** PF(K') ⊆ PF(K) for any K' ⊂ K (strict subset of KPIs).
+
+- **Adding a KPI GROWS the front** (more dimensions = harder to dominate).
+- **Removing a KPI SHRINKS the front** (fewer dimensions = easier to dominate).
+
+Empirical proof (JVL data): 9-KPI front = 65 solutions. Remove `fg_holding_cost` → 47 (−27%). Remove `labor_cost` → 48 (−26%). Add `wc_idle_minutes_total` (8→9): +8 gained, 0 lost.
+
+**UX implication:** KPI toggles in the explorer should communicate to users that unchecking a KPI reduces their options (shows fewer solutions), not more. Checking a new KPI shows more solutions but triggers `requires_exploration=True` because the new dimension hasn't been explored by the solver.
+
+See `prodplan-api/docs/PARETO_MATH.md` for the full formal proof and implementation details.
+
 ## Key Insights
 
 - **Crowding distance is the single best bang-for-buck feature.** <1ms compute, zero UI overhead (just a new color-by option), gives immediately actionable insight about which front regions need more exploration. Implement in the first session.
