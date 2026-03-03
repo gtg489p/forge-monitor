@@ -38,6 +38,12 @@ export function LocalDashboard() {
           >
             Pareto Explorer
           </a>
+          <a
+            href="#/disruption"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-800 rounded px-2 py-1"
+          >
+            Disruption Demo
+          </a>
           <TimeSelector value={horizonMinutes} onChange={setHorizonMinutes} />
           <div className="flex items-center gap-2">
             <span

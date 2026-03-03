@@ -4,6 +4,7 @@ import { FleetOverview } from "./views/FleetOverview.js";
 import { NodeDashboard } from "./views/NodeDashboard.js";
 import { JobsDashboard } from "./views/JobsDashboard.js";
 import { ParetoExplorer } from "./views/ParetoExplorer.js";
+import { DisruptionDemo } from "./views/DisruptionDemo.js";
 
 // ---------------------------------------------------------------------------
 // Hash router
@@ -14,7 +15,8 @@ type Route =
   | { view: "fleet" }
   | { view: "node"; nodeId: string }
   | { view: "jobs" }
-  | { view: "pareto" };
+  | { view: "pareto" }
+  | { view: "disruption" };
 
 function parseHash(): Route {
   const hash = window.location.hash;
@@ -25,6 +27,7 @@ function parseHash(): Route {
   if (hash === "#/fleet") return { view: "fleet" };
   if (hash === "#/jobs") return { view: "jobs" };
   if (hash === "#/pareto") return { view: "pareto" };
+  if (hash === "#/disruption") return { view: "disruption" };
   return { view: "local" };
 }
 
@@ -72,6 +75,11 @@ export function Router() {
   // Pareto explorer — works in BOTH local and hub modes
   if (route.view === "pareto") {
     return <ParetoExplorer />;
+  }
+
+  // Disruption demo — works in BOTH local and hub modes
+  if (route.view === "disruption") {
+    return <DisruptionDemo />;
   }
 
   // Local mode — single dashboard

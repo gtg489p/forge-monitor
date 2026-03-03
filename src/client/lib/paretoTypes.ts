@@ -1,16 +1,12 @@
 export interface ParetoMetrics {
-  labor_cost: number;
-  restock_cost: number;
-  flowtime_days: number;
-  makespan_days: number;
   tardiness_days: number;
-  fg_holding_cost: number;
+  labor_cost: number;
   fg_shipping_cost: number;
+  restock_cost: number;
   material_holding_cost: number;
-  wc_idle_minutes_total: number;
-  product_shift_concentration: number;
-  product_weekday_concentration: number;
-  product_work_center_concentration: number;
+  fg_holding_cost: number;
+  makespan_days: number;
+  flowtime_days: number;
 }
 
 export interface ParetoFrontPoint {
